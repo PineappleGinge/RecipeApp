@@ -39,5 +39,20 @@ fun HomeScreen(
         Spacer(Modifier.height(16.dp))
 
         // Banner card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+            onClick = onOpenRecipe
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ){
+                Text("Banner title")
+            }
+        }
     }
 }
