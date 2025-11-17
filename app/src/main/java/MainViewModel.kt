@@ -1,4 +1,4 @@
-package com.example.recipeapp.navigation
+package com.example.recipeapp
 
 
 import android.view.View
