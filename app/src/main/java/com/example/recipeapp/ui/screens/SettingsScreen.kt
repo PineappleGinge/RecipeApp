@@ -12,45 +12,46 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingsScreen(
+    darkMode: Boolean,
+    notificationsEnabled: Boolean,
+    defaultServings: Int,
+    onDarkModeChange: (Boolean) -> Unit,
+    onNotificationsChange: (Boolean) -> Unit,
+    onDefaultServingsChange: (Int) -> Unit,
     onClearShoppingList: (() -> Unit)? = null
 ) {
-
-    var darkMode by remember { mutableStateOf(false) }
-    var notificationsEnabled by remember { mutableStateOf(true) }
-    var defaultServings by remember { mutableStateOf(4) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
 
-        Text("Settings", style = MaterialTheme.typography.titleMedium)
+        Text("Settings", style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn {
 
-            // Dark Mode Toggle
+            // DARK MODE TOGGLE
             item {
                 SettingToggle(
                     title = "Dark Mode",
                     checked = darkMode,
-                    onChecked = { darkMode = it }
+                    onChecked = onDarkModeChange
                 )
             }
 
-            // Notifications Toggle
+            // NOTIFICATIONS TOGGLE
             item {
                 SettingToggle(
                     title = "Notifications",
                     checked = notificationsEnabled,
-                    onChecked = { notificationsEnabled = it }
+                    onChecked = onNotificationsChange
                 )
             }
 
-            // Default Servings Selector
+            // DEFAULT SERVINGS
             item {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 Text("Default Recipe Servings", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -58,36 +59,38 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(onClick = {
-                        if (defaultServings > 1) defaultServings--
-                    }) {
-                        Text("-")
-                    }
+                    IconButton(
+                        onClick = {
+                            if (defaultServings > 1) onDefaultServingsChange(defaultServings - 1)
+                        }
+                    ) { Text("-") }
 
-                    Text("$defaultServings servings")
+                    Text(text = "$defaultServings servings")
 
-                    IconButton(onClick = {
-                        if (defaultServings < 12) defaultServings++
-                    }) {
-                        Text("+")
-                    }
+                    IconButton(
+                        onClick = {
+                            if (defaultServings < 12) onDefaultServingsChange(defaultServings + 1)
+                        }
+                    ) { Text("+") }
                 }
             }
 
-            // Clear Shopping List button
+            // CLEAR SHOPPING LIST BUTTON
             item {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-                Button(
-                    onClick = { onClearShoppingList?.invoke() },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Clear Shopping List")
+                if (onClearShoppingList != null) {
+                    Button(
+                        onClick = onClearShoppingList,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Clear Shopping List")
+                    }
                 }
             }
 
-            // About Section
+            // ABOUT SECTION
             item {
                 Spacer(modifier = Modifier.height(32.dp))
                 Text("About", style = MaterialTheme.typography.titleMedium)
@@ -102,11 +105,7 @@ fun SettingsScreen(
 }
 
 @Composable
-fun SettingToggle(
-    title: String,
-    checked: Boolean,
-    onChecked: (Boolean) -> Unit
-) {
+fun SettingToggle(title: String, checked: Boolean, onChecked: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

@@ -13,7 +13,7 @@ import com.example.recipeapp.ListItem
 import androidx.compose.ui.Alignment
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun ShoppingListScreen(
     items: List<ListItem>,

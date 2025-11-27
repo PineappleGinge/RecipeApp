@@ -35,99 +35,105 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 @Composable
 fun RecipeApp(mainViewModel: MainViewModel = viewModel()){
 
-    val navController = rememberNavController()
+    val darkMode by mainViewModel.darkMode.collectAsState()
 
-    val bottomItems = listOf(
-        Screen.Home,
-        Screen.ShoppingList,
-        Screen.RecipeSearch,
-        Screen.Settings
-    )
+    RecipeAppTheme(darkTheme = darkMode) {
 
+        val navController = rememberNavController()
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
+        val bottomItems = listOf(
+            Screen.Home,
+            Screen.ShoppingList,
+            Screen.RecipeSearch,
+            Screen.Settings
+        )
 
-                bottomItems.forEach { screen ->
-                    NavigationBarItem(
-                        selected = currentRoute == screen.route,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+        Scaffold(
+            bottomBar = {
+                NavigationBar {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentRoute = navBackStackEntry?.destination?.route
+
+                    bottomItems.forEach { screen ->
+                        NavigationBarItem(
+                            selected = currentRoute == screen.route,
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Filled.Home,
+                                    contentDescription = screen.route
+                                )
+                            },
+                            label = {
+                                Text(
+                                    screen.route
+                                        .replace("_", " ")
+                                        .replaceFirstChar { it.uppercase() }
+                                )
                             }
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Filled.Home,
-                                contentDescription = screen.route
-                            )
-                        },
-                        label = {
-                            Text(
-                                screen.route
-                                    .replace("_", " ")
-                                    .replaceFirstChar { it.uppercase() }
-                            )
-                        }
-                    )
+                        )
+                    }
                 }
             }
-        }
-    ) { innerPadding ->
+        ) { innerPadding ->
 
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.route,
+                modifier = Modifier.padding(innerPadding)
+            ) {
 
-            // HOME SCREEN
-            composable(Screen.Home.route) {
-                val items by mainViewModel.shoppingItems.collectAsState()
-                HomeScreen(
-                    items = items,
-                    onItemCheckedChange = { mainViewModel.toggleItem(it) },
-                    onOpenRecipe = { navController.navigate(Screen.RecipeDetail.route) }
-                )
-            }
+                composable(Screen.Home.route) {
+                    val items by mainViewModel.shoppingItems.collectAsState()
+                    HomeScreen(
+                        items = items,
+                        onItemCheckedChange = { mainViewModel.toggleItem(it) },
+                        onOpenRecipe = { navController.navigate(Screen.RecipeDetail.route) }
+                    )
+                }
 
-            // RECIPE SEARCH SCREEN
-            composable(Screen.RecipeSearch.route) {
-                RecipeSearchScreen()
-            }
+                composable(Screen.RecipeSearch.route) { RecipeSearchScreen() }
 
-            // RECIPE DETAIL SCREEN
-            composable(Screen.RecipeDetail.route) {
-                val items by mainViewModel.shoppingItems.collectAsState()
-                RecipeDetailScreen(
-                    items = items,
-                    onCheckedChange = { mainViewModel.toggleItem(it) }
-                )
-            }
+                composable(Screen.RecipeDetail.route) {
+                    val items by mainViewModel.shoppingItems.collectAsState()
+                    RecipeDetailScreen(
+                        items = items,
+                        onCheckedChange = { mainViewModel.toggleItem(it) }
+                    )
+                }
 
-            // SHOPPING LIST SCREEN
-            composable(Screen.ShoppingList.route) {
-                val items by mainViewModel.shoppingItems.collectAsState()
-                ShoppingListScreen(
-                    items = items,
-                    onItemCheckedChange = { mainViewModel.toggleItem(it) }
-                )
-            }
+                composable(Screen.ShoppingList.route) {
+                    val items by mainViewModel.shoppingItems.collectAsState()
+                    ShoppingListScreen(
+                        items = items,
+                        onItemCheckedChange = { mainViewModel.toggleItem(it) }
+                    )
+                }
 
-            // SETTINGS SCREEN
-            composable(Screen.Settings.route) {
-                SettingsScreen()
+                composable(Screen.Settings.route) {
+                    val notifications by mainViewModel.notificationsEnabled.collectAsState()
+                    val servings by mainViewModel.defaultServings.collectAsState()
+
+                    SettingsScreen(
+                        darkMode = darkMode,
+                        notificationsEnabled = notifications,
+                        defaultServings = servings,
+                        onDarkModeChange = { mainViewModel.toggleDarkMode(it) },
+                        onNotificationsChange = { mainViewModel.toggleNotifications(it) },
+                        onDefaultServingsChange = { mainViewModel.setDefaultServings(it) }
+                    )
+                }
             }
         }
     }
