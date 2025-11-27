@@ -19,7 +19,6 @@ fun RecipeDetailScreen(
     items: List<ListItem>,
     onCheckedChange: (Int) -> Unit
 ) {
-
     Column(
         modifier = Modifier
             .fillMaxSize()
