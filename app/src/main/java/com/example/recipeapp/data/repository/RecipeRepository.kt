@@ -30,8 +30,9 @@ class RecipeRepository(
         return ingredientDao.getIngredientsForRecipe(recipeId)
     }
 
-    suspend fun addIngredient(ingredient: Ingredient) {
-        ingredientDao.insertIngredient(ingredient)
+
+    suspend fun updateIngredient(ingredient: Ingredient) {
+        ingredientDao.updateIngredient(ingredient)
     }
 
     fun getShoppingList(): List<ShoppingListItem> {

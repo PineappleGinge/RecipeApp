@@ -1,6 +1,5 @@
 package com.example.recipeapp.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,68 +8,71 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.recipeapp.ListItem
+import com.example.recipeapp.data.local.Ingredient
+import com.example.recipeapp.data.local.Recipe
 
 @Composable
 fun RecipeDetailScreen(
-    items: List<ListItem>,
-    onCheckedChange: (Int) -> Unit
+    recipe: Recipe?,
+    ingredients: List<Ingredient>
 ) {
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
 
-        Text("Title", style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = recipe?.name ?: "Recipe Details",
+            style = MaterialTheme.typography.titleLarge
+        )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Card(
-            modifier = Modifier
-                .size(160.dp)
-                .align(Alignment.CenterHorizontally)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Image")
-            }
-        }
+        Text(
+            "Ingredients:",
+            style = MaterialTheme.typography.titleMedium
+        )
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text("Title", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn {
-            items(items) { item ->
-                DetailListItemRow(item = item, onCheckedChange = onCheckedChange)
+            items(ingredients) { ingredient ->
+                IngredientDetailRow(ingredient)
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
 @Composable
-fun DetailListItemRow(item: ListItem, onCheckedChange: (Int) -> Unit) {
-    Row(
+fun IngredientDetailRow(
+    ingredient: Ingredient
+) {
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 6.dp)
     ) {
+        Row(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Text(
+                text = ingredient.name,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyLarge
+            )
 
-        Text(item.title, modifier = Modifier.weight(1f))
+            Checkbox(
+                checked = ingredient.hasItem,
+                onCheckedChange = {
 
-        Checkbox(
-            checked = item.checked,
-            onCheckedChange = { onCheckedChange(item.id) }
-        )
+                }
+            )
+        }
     }
 }

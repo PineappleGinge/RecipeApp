@@ -3,8 +3,6 @@ package com.example.recipeapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -13,18 +11,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import com.example.recipeapp.navigation.Screen
 import com.example.recipeapp.ui.screens.*
 import com.example.recipeapp.ui.theme.RecipeAppTheme
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.collectAsState
-
-
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +26,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun RecipeApp(mainViewModel: MainViewModel = viewModel()){
+fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
 
     val darkMode by mainViewModel.darkMode.collectAsState()
 
@@ -71,16 +61,12 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()){
                             },
                             icon = {
                                 Icon(
-                                    imageVector = Icons.Filled.Home,
+                                    imageVector = Icons.Default.Home,
                                     contentDescription = screen.route
                                 )
                             },
                             label = {
-                                Text(
-                                    screen.route
-                                        .replace("_", " ")
-                                        .replaceFirstChar { it.uppercase() }
-                                )
+                                Text(screen.route.replace("_", " ").replaceFirstChar { it.uppercase() })
                             }
                         )
                     }
@@ -94,32 +80,49 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()){
                 modifier = Modifier.padding(innerPadding)
             ) {
 
+
                 composable(Screen.Home.route) {
-                    val items by mainViewModel.shoppingItems.collectAsState()
+                    val recipe by mainViewModel.selectedRecipe.collectAsState()
+                    val ingredients by mainViewModel.ingredients.collectAsState()
+
                     HomeScreen(
-                        items = items,
-                        onItemCheckedChange = { mainViewModel.toggleItem(it) },
-                        onOpenRecipe = { navController.navigate(Screen.RecipeDetail.route) }
+                        recipe = recipe,
+                        ingredients = ingredients,
+                        onOpenRecipe = {
+                            navController.navigate(Screen.RecipeDetail.route)
+                        }
                     )
                 }
 
-                composable(Screen.RecipeSearch.route) { RecipeSearchScreen() }
+
+                composable(Screen.RecipeSearch.route) {
+                    RecipeSearchScreen(mainViewModel)
+                }
+
 
                 composable(Screen.RecipeDetail.route) {
-                    val items by mainViewModel.shoppingItems.collectAsState()
+                    val recipe by mainViewModel.selectedRecipe.collectAsState()
+                    val ingredients by mainViewModel.ingredients.collectAsState()
+
                     RecipeDetailScreen(
-                        items = items,
-                        onCheckedChange = { mainViewModel.toggleItem(it) }
+                        recipe = recipe,
+                        ingredients = ingredients
                     )
                 }
 
+
                 composable(Screen.ShoppingList.route) {
-                    val items by mainViewModel.shoppingItems.collectAsState()
+                    val shoppingList by mainViewModel.shoppingList.collectAsState()
+
                     ShoppingListScreen(
-                        items = items,
-                        onItemCheckedChange = { mainViewModel.toggleItem(it) }
+                        items = shoppingList,
+                        onItemCheckedChange = { mainViewModel.toggleShoppingItem(it) },
+                        onAddItem = { mainViewModel.addShoppingItem(it) },
+                        onDeleteItem = { mainViewModel.deleteShoppingItem(it) },
+                        onClearAll = { mainViewModel.clearShoppingList() }
                     )
                 }
+
 
                 composable(Screen.Settings.route) {
                     val notifications by mainViewModel.notificationsEnabled.collectAsState()
