@@ -10,6 +10,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.recipeapp.ListItem
+import androidx.compose.ui.Alignment
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,5 +52,26 @@ fun ShoppingListScreen(
                 ShoppingListItemRow(item = item, onCheckedChange = onItemCheckedChange)
             }
         }
+    }
+}
+
+@Composable
+fun ShoppingListItemRow(item: ListItem, onCheckedChange: (Int) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Text(
+            text = item.title,
+            modifier = Modifier.weight(1f)
+        )
+
+        Checkbox(
+            checked = item.checked,
+            onCheckedChange = { onCheckedChange(item.id) }
+        )
     }
 }
