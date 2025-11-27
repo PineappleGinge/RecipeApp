@@ -7,5 +7,5 @@ import androidx.room.PrimaryKey
 data class ShoppingListItem(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val checked: Boolean = false
+    val hasItem: Boolean = false
 )

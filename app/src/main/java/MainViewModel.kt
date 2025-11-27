@@ -1,16 +1,12 @@
 package com.example.recipeapp
 
-
-
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.recipeapp.data.SettingsDataStore
-import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import com.example.recipeapp.data.local.*
 
 data class ListItem(
     val id: Int,
@@ -20,47 +16,89 @@ data class ListItem(
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val settings = SettingsDataStore(application)
-    private val _shoppingItems = MutableStateFlow(
-        List(10) { index ->
-            ListItem(id = index, title = "List item ${index + 1}")
+    private val db = AppDatabase.getInstance(application)
+    private val repository = RecipeRepository(
+        db.recipeDao(),
+        db.ingredientDao(),
+        db.shoppingListDao()
+    )
+
+    private val _shoppingList = MutableStateFlow<List<ShoppingListItem>>(emptyList())
+    val shoppingList: StateFlow<List<ShoppingListItem>> = _shoppingList
+
+    private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
+    val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe
+
+    private val _ingredients = MutableStateFlow<List<Ingredient>>(emptyList())
+    val ingredients: StateFlow<List<Ingredient>> = _ingredients
+
+    init {
+        loadShoppingList()
+        loadDefaultRecipe()
+    }
+
+    private fun loadShoppingList() {
+        viewModelScope.launch {
+            _shoppingList.value = repository.getShoppingList()
         }
-    )
-    val shoppingItems: StateFlow<List<ListItem>> = _shoppingItems.asStateFlow()
+    }
 
-    fun toggleItem(id: Int) {
-        _shoppingItems.value = _shoppingItems.value.map {
-            if (it.id == id) it.copy(checked = !it.checked) else it
+    fun addShoppingItem(name: String) {
+        viewModelScope.launch {
+            val item = ShoppingListItem(name = name)
+            repository.addShoppingItem(item)
+            loadShoppingList()
         }
     }
 
-    val darkMode = settings.darkMode.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(),
-        false
-    )
-
-    val notificationsEnabled = settings.notificationsEnabled.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(),
-        true
-    )
-
-    val defaultServings = settings.defaultServings.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(),
-        4
-    )
-
-    fun toggleDarkMode(value: Boolean) {
-        viewModelScope.launch { settings.setDarkMode(value) }
+    fun toggleShoppingItem(item: ShoppingListItem) {
+        viewModelScope.launch {
+            repository.updateShoppingItem(
+                item.copy(hasItem = !item.hasItem)
+            )
+            loadShoppingList()
+        }
     }
 
-    fun toggleNotifications(value: Boolean) {
-        viewModelScope.launch { settings.setNotifications(value) }
+    fun deleteShoppingItem(item: ShoppingListItem) {
+        viewModelScope.launch {
+            repository.deleteShoppingItem(item)
+            loadShoppingList()
+        }
     }
 
-    fun setDefaultServings(value: Int) {
-        viewModelScope.launch { settings.setDefaultServings(value) }
+    fun clearShoppingList() {
+        viewModelScope.launch {
+            repository.clearShoppingList()
+            loadShoppingList()
+        }
+    }
+
+    private fun loadDefaultRecipe() {
+        viewModelScope.launch {
+            val recipes = repository.getAllRecipes()
+            if (recipes.isNotEmpty()) {
+                _selectedRecipe.value = recipes.first()
+                loadIngredients(recipes.first().id)
+            }
+        }
+    }
+
+    fun loadRecipe(id: Int) {
+        viewModelScope.launch {
+            val recipe = repository.getRecipeById(id)
+            _selectedRecipe.value = recipe
+            recipe?.let { loadIngredients(it.id) }
+        }
+    }
+
+    private fun loadIngredients(recipeId: Int) {
+        viewModelScope.launch {
+            _ingredients.value = repository.getIngredientsForRecipe(recipeId)
+        }
+    }
+
+    fun searchRecipes(query: String): List<Recipe> {
+        return repository.searchRecipes(query)
     }
 }
