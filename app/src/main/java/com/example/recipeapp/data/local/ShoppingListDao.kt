@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ShoppingListDao {
 
-    @Query("SELECT * FROM shopping_list_items")
-    fun getShoppingList(): Flow<List<ShoppingListItem>>
+    @Query("SELECT * FROM shopping_list")
+    suspend fun getShoppingItems(): List<ShoppingListItem>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItem(item: ShoppingListItem)
@@ -18,6 +18,6 @@ interface ShoppingListDao {
     @Delete
     suspend fun deleteItem(item: ShoppingListItem)
 
-    @Query("DELETE FROM shopping_list_items")
+    @Query("DELETE FROM shopping_list")
     suspend fun clearAll()
 }
