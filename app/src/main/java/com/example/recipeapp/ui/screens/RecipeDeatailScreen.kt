@@ -14,3 +14,64 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.recipeapp.ListItem
 
+@Composable
+fun RecipeDetailScreen(
+    items: List<ListItem>,
+    onCheckedChange: (Int) -> Unit
+) {
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+
+        Text("Title", style = MaterialTheme.typography.titleMedium)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Card(
+            modifier = Modifier
+                .size(160.dp)
+                .align(Alignment.CenterHorizontally)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Image")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text("Title", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyColumn {
+            items(items) { item ->
+                DetailListItemRow(item = item, onCheckedChange = onCheckedChange)
+            }
+        }
+    }
+}
+
+@Composable
+fun DetailListItemRow(item: ListItem, onCheckedChange: (Int) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Text(item.title, modifier = Modifier.weight(1f))
+
+        Checkbox(
+            checked = item.checked,
+            onCheckedChange = { onCheckedChange(item.id) }
+        )
+    }
+}
