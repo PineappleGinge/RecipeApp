@@ -19,22 +19,49 @@ data class ListItem(
     val checked: Boolean = false
 )
 
-class MainViewModel : ViewModel(){
+class MainViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val settings = SettingsDataStore(application)
     private val _shoppingItems = MutableStateFlow(
-        List(10) {index ->
+        List(10) { index ->
             ListItem(id = index, title = "List item ${index + 1}")
         }
     )
     val shoppingItems: StateFlow<List<ListItem>> = _shoppingItems.asStateFlow()
 
-    fun toggleItem(id: Int){
-        _shoppingItems.value = _shoppingItems.value.map { item ->
-            if (item.id == id) {
-                item.copy(checked = !item.checked)
-            } else {
-                item
-            }
+    fun toggleItem(id: Int) {
+        _shoppingItems.value = _shoppingItems.value.map {
+            if (it.id == id) it.copy(checked = !it.checked) else it
         }
+    }
+
+    val darkMode = settings.darkMode.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(),
+        false
+    )
+
+    val notificationsEnabled = settings.notificationsEnabled.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(),
+        true
+    )
+
+    val defaultServings = settings.defaultServings.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(),
+        4
+    )
+
+    fun toggleDarkMode(value: Boolean) {
+        viewModelScope.launch { settings.setDarkMode(value) }
+    }
+
+    fun toggleNotifications(value: Boolean) {
+        viewModelScope.launch { settings.setNotifications(value) }
+    }
+
+    fun setDefaultServings(value: Int) {
+        viewModelScope.launch { settings.setDefaultServings(value) }
     }
 }
