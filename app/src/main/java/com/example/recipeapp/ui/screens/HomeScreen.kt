@@ -1,107 +1,92 @@
 package com.example.recipeapp.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.recipeapp.ListItem
-
+import com.example.recipeapp.MainViewModel
+import com.example.recipeapp.data.local.Ingredient
 
 @Composable
 fun HomeScreen(
-    items: List<ListItem>,
-    onItemCheckedChange: (Int) -> Unit,
+    viewModel: MainViewModel,
     onOpenRecipe: () -> Unit
 ) {
+    val recipe = viewModel.selectedRecipe.collectAsState().value
+    val ingredients = viewModel.ingredients.collectAsState().value
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
 
-        OutlinedTextField(
-            value = "",
-            onValueChange = { },
-            label = { Text("Search") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(Modifier.height(16.dp))
-
+        // Banner for Current Recipe
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(140.dp)
-                .clickable { onOpenRecipe() }
+                .height(150.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            onClick = { onOpenRecipe() }
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Banner title")
+                Text(
+                    text = recipe?.name ?: "No recipes saved yet",
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
         }
 
-        Spacer(Modifier.height(24.dp))
-        Text("Title", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(Modifier.height(8.dp))
+        Text("Ingredients", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn {
-            items(items) { item ->
-                ListItemRow(item = item, onItemCheckedChange = onItemCheckedChange)
+            items(ingredients) { ingredient ->
+                IngredientRow(
+                    ingredient = ingredient
+                )
             }
         }
     }
 }
 
 @Composable
-fun ListItemRow(
-    item: ListItem,
-    onItemCheckedChange: (Int) -> Unit
+fun IngredientRow(
+    ingredient: Ingredient
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.secondary,
-                    shape = MaterialTheme.shapes.small
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("A")
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
         Text(
-            text = item.title,
-            modifier = Modifier.weight(1f)
+            text = ingredient.name,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyLarge
         )
 
         Checkbox(
-            checked = item.checked,
-            onCheckedChange = { onItemCheckedChange(item.id) }
+            checked = ingredient.hasItem,
+            onCheckedChange = {
+                // TODO: will update after ingredient toggle is added
+            }
         )
     }
 }

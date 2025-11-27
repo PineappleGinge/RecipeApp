@@ -7,12 +7,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import com.example.recipeapp.data.local.*
-
-data class ListItem(
-    val id: Int,
-    val title: String,
-    val checked: Boolean = false
-)
+import androidx.lifecycle.viewModelScope
+import com.example.recipeapp.data.local.*
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -24,13 +22,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     )
 
     private val _shoppingList = MutableStateFlow<List<ShoppingListItem>>(emptyList())
-    val shoppingList: StateFlow<List<ShoppingListItem>> = _shoppingList
+    val shoppingList: StateFlow<List<ShoppingListItem>> = _shoppingList.asStateFlow()
 
     private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
     val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe
 
     private val _ingredients = MutableStateFlow<List<Ingredient>>(emptyList())
-    val ingredients: StateFlow<List<Ingredient>> = _ingredients
+    val ingredients: StateFlow<List<Ingredient>> = _ingredients.asStateFlow()
 
     init {
         loadShoppingList()
@@ -45,17 +43,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun addShoppingItem(name: String) {
         viewModelScope.launch {
-            val item = ShoppingListItem(name = name)
-            repository.addShoppingItem(item)
+            repository.addShoppingItem(
+                ShoppingListItem(name = name)
+            )
             loadShoppingList()
         }
     }
 
     fun toggleShoppingItem(item: ShoppingListItem) {
         viewModelScope.launch {
-            repository.updateShoppingItem(
-                item.copy(hasItem = !item.hasItem)
-            )
+            val updated = item.copy(hasItem = !item.hasItem)
+            repository.updateShoppingItem(updated)
             loadShoppingList()
         }
     }
@@ -78,8 +76,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val recipes = repository.getAllRecipes()
             if (recipes.isNotEmpty()) {
-                _selectedRecipe.value = recipes.first()
-                loadIngredients(recipes.first().id)
+                val firstRecipe = recipes.first()
+                _selectedRecipe.value = firstRecipe
+                loadIngredients(firstRecipe.id)
             }
         }
     }
@@ -88,7 +87,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val recipe = repository.getRecipeById(id)
             _selectedRecipe.value = recipe
-            recipe?.let { loadIngredients(it.id) }
+            recipe?.let {
+                loadIngredients(it.id)
+            }
         }
     }
 
