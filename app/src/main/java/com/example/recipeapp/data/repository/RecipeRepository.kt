@@ -14,9 +14,10 @@ class RecipeRepository(
         return recipeDao.getRecipeById(id)
     }
 
-    fun searchRecipes(query: String): List<Recipe> {
+    suspend fun searchRecipes(query: String): List<Recipe> {
         return recipeDao.searchRecipes(query)
     }
+
 
     suspend fun addRecipe(recipe: Recipe) {
         recipeDao.insertRecipe(recipe)
@@ -25,6 +26,11 @@ class RecipeRepository(
     suspend fun deleteRecipe(recipe: Recipe) {
         recipeDao.deleteRecipe(recipe)
     }
+
+    suspend fun addIngredient(ingredient: Ingredient) {
+        ingredientDao.insertIngredients(listOf(ingredient))
+    }
+
 
     fun getIngredientsForRecipe(recipeId: Int): List<Ingredient> {
         return ingredientDao.getIngredientsForRecipe(recipeId)

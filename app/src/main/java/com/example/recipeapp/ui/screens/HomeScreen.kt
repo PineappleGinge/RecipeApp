@@ -17,7 +17,8 @@ import com.example.recipeapp.data.local.Recipe
 fun HomeScreen(
     recipe: Recipe?,
     ingredients: List<Ingredient>,
-    onOpenRecipe: () -> Unit
+    onOpenRecipe: () -> Unit,
+    onToggleIngredient: (Ingredient) -> Unit
 ) {
 
     Column(
@@ -63,14 +64,18 @@ fun HomeScreen(
 
         LazyColumn {
             items(ingredients) { ingredient ->
-                IngredientRow(ingredient)
+                IngredientRow(
+                    ingredient = ingredient,
+                    onToggleIngredient = onToggleIngredient
+                )
+
             }
         }
     }
 }
 
 @Composable
-fun IngredientRow(ingredient: Ingredient) {
+fun IngredientRow(ingredient: Ingredient, onToggleIngredient: (Ingredient) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -86,7 +91,7 @@ fun IngredientRow(ingredient: Ingredient) {
         Checkbox(
             checked = ingredient.hasItem,
             onCheckedChange = {
-                // We will add ingredient toggling later
+                onToggleIngredient(ingredient)
             }
         )
     }

@@ -14,7 +14,12 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
 import com.example.recipeapp.navigation.Screen
 import com.example.recipeapp.ui.screens.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import com.example.recipeapp.data.local.Recipe
 import com.example.recipeapp.ui.theme.RecipeAppTheme
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,14 +95,27 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
                         ingredients = ingredients,
                         onOpenRecipe = {
                             navController.navigate(Screen.RecipeDetail.route)
-                        }
+                        },
+                        onToggleIngredient = { mainViewModel.toggleIngredient(it) }
                     )
                 }
 
 
                 composable(Screen.RecipeSearch.route) {
-                    RecipeSearchScreen(mainViewModel)
+
+                    val results by mainViewModel.searchResults.collectAsState()
+
+                    RecipeSearchScreen(
+                        onSearch = { mainViewModel.searchRecipes(it) },
+                        onRecipeClick = { id ->
+                            mainViewModel.loadRecipe(id)
+                            navController.navigate(Screen.RecipeDetail.route)
+                        },
+                        results = results
+                    )
                 }
+
+
 
 
                 composable(Screen.RecipeDetail.route) {
@@ -106,12 +124,14 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
 
                     RecipeDetailScreen(
                         recipe = recipe,
-                        ingredients = ingredients
+                        ingredients = ingredients,
+                        onToggleIngredient = { mainViewModel.toggleIngredient(it) }
                     )
                 }
 
 
                 composable(Screen.ShoppingList.route) {
+
                     val shoppingList by mainViewModel.shoppingList.collectAsState()
 
                     ShoppingListScreen(
@@ -122,6 +142,7 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
                         onClearAll = { mainViewModel.clearShoppingList() }
                     )
                 }
+
 
 
                 composable(Screen.Settings.route) {

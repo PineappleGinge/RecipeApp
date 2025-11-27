@@ -13,7 +13,8 @@ interface RecipeDao {
     fun getRecipeById(id: Int): Recipe?
 
     @Query("SELECT * FROM recipes WHERE name LIKE '%' || :query || '%'")
-    fun searchRecipes(query: String): List<Recipe>
+    suspend fun searchRecipes(query: String): List<Recipe>
+
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecipe(recipe: Recipe)

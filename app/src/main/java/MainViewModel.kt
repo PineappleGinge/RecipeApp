@@ -7,8 +7,13 @@ import com.example.recipeapp.data.SettingsDataStore
 import com.example.recipeapp.data.local.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val _searchResults = MutableStateFlow<List<Recipe>>(emptyList())
+    val searchResults = _searchResults
 
     private val db = AppDatabase.getInstance(application)
     private val repository = RecipeRepository(
@@ -70,57 +75,58 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun loadShoppingList() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _shoppingList.value = repository.getShoppingList()
         }
     }
 
     fun addShoppingItem(name: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.addShoppingItem(ShoppingListItem(name = name))
-            loadShoppingList()
+            _shoppingList.value = repository.getShoppingList()
         }
     }
 
     fun toggleShoppingItem(item: ShoppingListItem) {
-        viewModelScope.launch {
-            repository.updateShoppingItem(
-                item.copy(hasItem = !item.hasItem)
-            )
-            loadShoppingList()
+        viewModelScope.launch(Dispatchers.IO) {
+            val updated = item.copy(hasItem = !item.hasItem)
+            repository.updateShoppingItem(updated)
+            _shoppingList.value = repository.getShoppingList()
         }
     }
 
     fun deleteShoppingItem(item: ShoppingListItem) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.deleteShoppingItem(item)
-            loadShoppingList()
+            _shoppingList.value = repository.getShoppingList()
         }
     }
 
     fun clearShoppingList() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.clearShoppingList()
-            loadShoppingList()
+            _shoppingList.value = repository.getShoppingList()
         }
     }
 
     private fun loadDefaultRecipe() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val recipes = repository.getAllRecipes()
             if (recipes.isNotEmpty()) {
                 val first = recipes.first()
                 _selectedRecipe.value = first
-                loadIngredients(first.id)
+                _ingredients.value = repository.getIngredientsForRecipe(first.id)
             }
         }
     }
 
     fun loadRecipe(id: Int) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val recipe = repository.getRecipeById(id)
             _selectedRecipe.value = recipe
-            recipe?.let { loadIngredients(it.id) }
+            if (recipe != null) {
+                _ingredients.value = repository.getIngredientsForRecipe(recipe.id)
+            }
         }
     }
 
@@ -130,7 +136,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun searchRecipes(query: String): List<Recipe> {
-        return repository.searchRecipes(query)
+    fun searchRecipes(query: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val results = repository.searchRecipes(query)
+            _searchResults.value = results
+        }
     }
+
+
+    fun toggleIngredient(item: Ingredient) {
+        viewModelScope.launch {
+            val updated = item.copy(hasItem = !item.hasItem)
+            repository.updateIngredient(updated)
+            loadIngredients(item.recipeId)
+        }
+    }
+
 }

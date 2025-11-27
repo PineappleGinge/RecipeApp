@@ -11,15 +11,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import com.example.recipeapp.data.local.Recipe
 
 @Composable
 fun RecipeSearchScreen(
-    searchRecipes: (String) -> List<Recipe>,
-    onRecipeSelected: (Int) -> Unit
+    onSearch: (String) -> Unit,
+    onRecipeClick: (Int) -> Unit,
+    results: List<Recipe>
 ) {
+
     var query by remember { mutableStateOf("") }
-    var results by remember { mutableStateOf<List<Recipe>>(emptyList()) }
 
     Column(
         modifier = Modifier
@@ -27,20 +31,24 @@ fun RecipeSearchScreen(
             .padding(16.dp)
     ) {
 
-        // SEARCH BAR
+
         OutlinedTextField(
             value = query,
-            onValueChange = {
-                query = it
-                results = searchRecipes(it)      // ← Calls VM search
-            },
+            onValueChange = { query = it },
             label = { Text("Search Recipes") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    onSearch(query)
+                }
+            )
         )
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // RESULTS LIST
+
         LazyColumn {
             items(results) { recipe ->
                 Card(
@@ -48,7 +56,7 @@ fun RecipeSearchScreen(
                         .fillMaxWidth()
                         .padding(vertical = 6.dp)
                         .clickable {
-                            onRecipeSelected(recipe.id)   // ← Load recipe
+                            onRecipeClick(recipe.id)
                         }
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
