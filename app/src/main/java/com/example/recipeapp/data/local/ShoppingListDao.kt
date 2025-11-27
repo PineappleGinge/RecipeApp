@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface ShoppingListDao {
 
     @Query("SELECT * FROM shopping_list")
-    suspend fun getShoppingItems(): List<ShoppingListItem>
+    fun getShoppingList(): List<ShoppingListItem>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItem(item: ShoppingListItem)

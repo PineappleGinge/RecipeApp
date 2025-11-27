@@ -1,6 +1,4 @@
-package com.example.recipeapp.data.repository
-
-import com.example.recipeapp.data.local.*
+package com.example.recipeapp.data.local
 
 class RecipeRepository(
     private val recipeDao: RecipeDao,
@@ -8,28 +6,44 @@ class RecipeRepository(
     private val shoppingListDao: ShoppingListDao
 ) {
 
+    fun getAllRecipes(): List<Recipe> {
+        return recipeDao.getAllRecipes()
+    }
+
+    fun getRecipeById(id: Int): Recipe? {
+        return recipeDao.getRecipeById(id)
+    }
+
+    fun searchRecipes(query: String): List<Recipe> {
+        return recipeDao.searchRecipes(query)
+    }
+
     suspend fun addRecipe(recipe: Recipe) {
         recipeDao.insertRecipe(recipe)
     }
 
-    suspend fun getAllRecipes(): List<Recipe> {
-        return recipeDao.getAllRecipes()
+    suspend fun deleteRecipe(recipe: Recipe) {
+        recipeDao.deleteRecipe(recipe)
+    }
+
+    fun getIngredientsForRecipe(recipeId: Int): List<Ingredient> {
+        return ingredientDao.getIngredientsForRecipe(recipeId)
     }
 
     suspend fun addIngredient(ingredient: Ingredient) {
         ingredientDao.insertIngredient(ingredient)
     }
 
-    suspend fun getIngredientsForRecipe(recipeId: Int): List<Ingredient> {
-        return ingredientDao.getIngredientsForRecipe(recipeId)
+    fun getShoppingList(): List<ShoppingListItem> {
+        return shoppingListDao.getShoppingList()
     }
 
     suspend fun addShoppingItem(item: ShoppingListItem) {
         shoppingListDao.insertItem(item)
     }
 
-    suspend fun getShoppingList(): List<ShoppingListItem> {
-        return shoppingListDao.getShoppingItems()
+    suspend fun updateShoppingItem(item: ShoppingListItem) {
+        shoppingListDao.updateItem(item)
     }
 
     suspend fun deleteShoppingItem(item: ShoppingListItem) {
