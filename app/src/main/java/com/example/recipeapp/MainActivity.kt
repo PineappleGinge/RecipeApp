@@ -20,6 +20,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.recipeapp.navigation.Screen
 import com.example.recipeapp.ui.screens.*
 import com.example.recipeapp.ui.theme.RecipeAppTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+
+
 
 
 class MainActivity : ComponentActivity() {
@@ -33,7 +37,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
-fun RecipeApp(){
+fun RecipeApp(mainViewModel: MainViewModel = viewModel()){
 
     val navController = rememberNavController()
 
@@ -43,4 +47,88 @@ fun RecipeApp(){
         Screen.RecipeSearch,
         Screen.Settings
     )
+
+
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+
+                bottomItems.forEach { screen ->
+                    NavigationBarItem(
+                        selected = currentRoute == screen.route,
+                        onClick = {
+                            navController.navigate(screen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Filled.Home,
+                                contentDescription = screen.route
+                            )
+                        },
+                        label = {
+                            Text(
+                                screen.route
+                                    .replace("_", " ")
+                                    .replaceFirstChar { it.uppercase() }
+                            )
+                        }
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
+
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Home.route,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+
+            // HOME SCREEN
+            composable(Screen.Home.route) {
+                val items by mainViewModel.shoppingItems.collectAsState()
+                HomeScreen(
+                    items = items,
+                    onItemCheckedChange = { mainViewModel.toggleItem(it) },
+                    onOpenRecipe = { navController.navigate(Screen.RecipeDetail.route) }
+                )
+            }
+
+            // RECIPE SEARCH SCREEN
+            composable(Screen.RecipeSearch.route) {
+                RecipeSearchScreen()
+            }
+
+            // RECIPE DETAIL SCREEN
+            composable(Screen.RecipeDetail.route) {
+                val items by mainViewModel.shoppingItems.collectAsState()
+                RecipeDetailScreen(
+                    items = items,
+                    onCheckedChange = { mainViewModel.toggleItem(it) }
+                )
+            }
+
+            // SHOPPING LIST SCREEN
+            composable(Screen.ShoppingList.route) {
+                val items by mainViewModel.shoppingItems.collectAsState()
+                ShoppingListScreen(
+                    items = items,
+                    onItemCheckedChange = { mainViewModel.toggleItem(it) }
+                )
+            }
+
+            // SETTINGS SCREEN
+            composable(Screen.Settings.route) {
+                SettingsScreen()
+            }
+        }
+    }
 }
