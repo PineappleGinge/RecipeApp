@@ -7,7 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.recipeapp.data.local.AppDatabase
 import com.example.recipeapp.data.local.Ingredient
 import com.example.recipeapp.data.local.Recipe
-import com.example.recipeapp.data.local.RecipeRepository
+import com.example.recipeapp.data.repository.RecipeRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
@@ -50,29 +50,28 @@ class RecipeRepositoryTest {
         val imageUrl = "https://live.staticflickr.com/3305/3328844393_de8e2bb524_b.jpg"
 
         val recipe = Recipe(
-            id = 1,
             name = "Chocolate Cake",
             imageUrl = imageUrl,
         )
 
-        repository.addRecipe(recipe)
+        val recipeId = repository.addRecipe(recipe).toInt()
 
         val ingredients = listOf(
-            Ingredient(recipeId = 1, name = "Flour"),
-            Ingredient(recipeId = 1, name = "Eggs"),
-            Ingredient(recipeId = 1, name = "Chocolate")
+            Ingredient(recipeId = recipeId, name = "Flour"),
+            Ingredient(recipeId = recipeId, name = "Eggs"),
+            Ingredient(recipeId = recipeId, name = "Chocolate")
         )
 
         ingredients.forEach {
             repository.addIngredient(it)
         }
 
-        val loadedRecipe = repository.getRecipeById(1)
+        val loadedRecipe = repository.getRecipeById(recipeId)
         Assert.assertNotNull(loadedRecipe)
         Assert.assertEquals("Chocolate Cake", loadedRecipe?.name)
         Assert.assertEquals(imageUrl, loadedRecipe?.imageUrl)
 
-        val loadedIngredients = repository.getIngredientsForRecipe(1)
+        val loadedIngredients = repository.getIngredientsForRecipe(recipeId)
         Assert.assertEquals(3, loadedIngredients.size)
         Assert.assertEquals("Flour", loadedIngredients[0].name)
     }

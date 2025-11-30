@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface IngredientDao {
 
     @Query("SELECT * FROM ingredients WHERE recipeId = :recipeId")
-    fun getIngredientsForRecipe(recipeId: Int): List<Ingredient>
+    suspend fun getIngredientsForRecipe(recipeId: Int): List<Ingredient>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertIngredient(ingredients: Ingredient)

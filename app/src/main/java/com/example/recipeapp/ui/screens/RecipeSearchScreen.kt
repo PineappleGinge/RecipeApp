@@ -24,6 +24,14 @@ fun RecipeSearchScreen(
 ) {
 
     var query by remember { mutableStateOf("") }
+    var navigateOnResult by remember { mutableStateOf(false) }
+
+    LaunchedEffect(results, navigateOnResult) {
+        if (navigateOnResult && results.isNotEmpty()) {
+            navigateOnResult = false
+            onRecipeClick(results.first().id)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -37,10 +45,14 @@ fun RecipeSearchScreen(
             onValueChange = { query = it },
             label = { Text("Search Recipes") },
             modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
                 onSearch = {
-                    onSearch(query)
+                    if (query.isNotBlank()) {
+                        navigateOnResult = true
+                        onSearch(query)
+                    }
                 }
             )
         )

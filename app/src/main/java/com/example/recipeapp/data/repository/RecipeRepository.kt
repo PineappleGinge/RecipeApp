@@ -1,4 +1,11 @@
-package com.example.recipeapp.data.local
+package com.example.recipeapp.data.repository
+
+import com.example.recipeapp.data.local.Ingredient
+import com.example.recipeapp.data.local.IngredientDao
+import com.example.recipeapp.data.local.Recipe
+import com.example.recipeapp.data.local.RecipeDao
+import com.example.recipeapp.data.local.ShoppingListDao
+import com.example.recipeapp.data.local.ShoppingListItem
 
 class RecipeRepository(
     private val recipeDao: RecipeDao,
@@ -6,11 +13,11 @@ class RecipeRepository(
     private val shoppingListDao: ShoppingListDao
 ) {
 
-    fun getAllRecipes(): List<Recipe> {
+    suspend fun getAllRecipes(): List<Recipe> {
         return recipeDao.getAllRecipes()
     }
 
-    fun getRecipeById(id: Int): Recipe? {
+    suspend fun getRecipeById(id: Int): Recipe? {
         return recipeDao.getRecipeById(id)
     }
 
@@ -18,9 +25,8 @@ class RecipeRepository(
         return recipeDao.searchRecipes(query)
     }
 
-
-    suspend fun addRecipe(recipe: Recipe) {
-        recipeDao.insertRecipe(recipe)
+    suspend fun addRecipe(recipe: Recipe): Long {
+        return recipeDao.insertRecipe(recipe)
     }
 
     suspend fun deleteRecipe(recipe: Recipe) {
@@ -31,17 +37,19 @@ class RecipeRepository(
         ingredientDao.insertIngredients(listOf(ingredient))
     }
 
-
-    fun getIngredientsForRecipe(recipeId: Int): List<Ingredient> {
-        return ingredientDao.getIngredientsForRecipe(recipeId)
+    suspend fun addIngredients(ingredients: List<Ingredient>) {
+        ingredientDao.insertIngredients(ingredients)
     }
 
+    suspend fun getIngredientsForRecipe(recipeId: Int): List<Ingredient> {
+        return ingredientDao.getIngredientsForRecipe(recipeId)
+    }
 
     suspend fun updateIngredient(ingredient: Ingredient) {
         ingredientDao.updateIngredient(ingredient)
     }
 
-    fun getShoppingList(): List<ShoppingListItem> {
+    suspend fun getShoppingList(): List<ShoppingListItem> {
         return shoppingListDao.getShoppingList()
     }
 

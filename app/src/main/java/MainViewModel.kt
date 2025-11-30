@@ -4,10 +4,17 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.recipeapp.data.SettingsDataStore
-import com.example.recipeapp.data.local.*
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import com.example.recipeapp.data.local.AppDatabase
+import com.example.recipeapp.data.local.Ingredient
+import com.example.recipeapp.data.local.Recipe
+import com.example.recipeapp.data.local.ShoppingListItem
+import com.example.recipeapp.data.repository.RecipeRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -70,20 +77,59 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val ingredients: StateFlow<List<Ingredient>> = _ingredients.asStateFlow()
 
     init {
-        loadShoppingList()
-        loadDefaultRecipe()
+        viewModelScope.launch(Dispatchers.IO) {
+            seedIfEmpty()
+            loadDefaultRecipeInternal()
+            loadShoppingListInternal()
+        }
     }
 
-    private fun loadShoppingList() {
+    private suspend fun loadShoppingListInternal() {
+        _shoppingList.value = repository.getShoppingList()
+    }
+
+    private suspend fun seedIfEmpty() {
+        if (repository.getAllRecipes().isEmpty()) {
+            val recipeId = repository.addRecipe(
+                Recipe(
+                    name = "Chocolate Cake",
+                    imageUrl = "https://example.com/cake.jpg"
+                )
+            ).toInt()
+
+            repository.addIngredients(
+                listOf(
+                    Ingredient(recipeId = recipeId, name = "Flour"),
+                    Ingredient(recipeId = recipeId, name = "Eggs"),
+                    Ingredient(recipeId = recipeId, name = "Chocolate")
+                )
+            )
+        }
+    }
+
+    private suspend fun loadDefaultRecipeInternal() {
+        val recipes = repository.getAllRecipes()
+        if (recipes.isNotEmpty()) {
+            val first = recipes.first()
+            _selectedRecipe.value = first
+            _ingredients.value = repository.getIngredientsForRecipe(first.id)
+        }
+    }
+
+    private suspend fun loadIngredientsInternal(recipeId: Int) {
+        _ingredients.value = repository.getIngredientsForRecipe(recipeId)
+    }
+
+    fun loadShoppingList() {
         viewModelScope.launch(Dispatchers.IO) {
-            _shoppingList.value = repository.getShoppingList()
+            loadShoppingListInternal()
         }
     }
 
     fun addShoppingItem(name: String) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.addShoppingItem(ShoppingListItem(name = name))
-            _shoppingList.value = repository.getShoppingList()
+            loadShoppingListInternal()
         }
     }
 
@@ -91,32 +137,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             val updated = item.copy(hasItem = !item.hasItem)
             repository.updateShoppingItem(updated)
-            _shoppingList.value = repository.getShoppingList()
+            loadShoppingListInternal()
         }
     }
 
     fun deleteShoppingItem(item: ShoppingListItem) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteShoppingItem(item)
-            _shoppingList.value = repository.getShoppingList()
+            loadShoppingListInternal()
         }
     }
 
     fun clearShoppingList() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.clearShoppingList()
-            _shoppingList.value = repository.getShoppingList()
-        }
-    }
-
-    private fun loadDefaultRecipe() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val recipes = repository.getAllRecipes()
-            if (recipes.isNotEmpty()) {
-                val first = recipes.first()
-                _selectedRecipe.value = first
-                _ingredients.value = repository.getIngredientsForRecipe(first.id)
-            }
+            loadShoppingListInternal()
         }
     }
 
@@ -125,14 +160,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val recipe = repository.getRecipeById(id)
             _selectedRecipe.value = recipe
             if (recipe != null) {
-                _ingredients.value = repository.getIngredientsForRecipe(recipe.id)
+                loadIngredientsInternal(recipe.id)
             }
-        }
-    }
-
-    private fun loadIngredients(recipeId: Int) {
-        viewModelScope.launch {
-            _ingredients.value = repository.getIngredientsForRecipe(recipeId)
         }
     }
 
@@ -145,10 +174,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun toggleIngredient(item: Ingredient) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val updated = item.copy(hasItem = !item.hasItem)
             repository.updateIngredient(updated)
-            loadIngredients(item.recipeId)
+            loadIngredientsInternal(item.recipeId)
         }
     }
 
