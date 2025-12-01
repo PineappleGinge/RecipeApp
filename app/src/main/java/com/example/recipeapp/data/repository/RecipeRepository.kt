@@ -6,6 +6,7 @@ import com.example.recipeapp.data.local.Recipe
 import com.example.recipeapp.data.local.RecipeDao
 import com.example.recipeapp.data.local.ShoppingListDao
 import com.example.recipeapp.data.local.ShoppingListItem
+import kotlinx.coroutines.flow.Flow
 
 class RecipeRepository(
     private val recipeDao: RecipeDao,
@@ -13,15 +14,15 @@ class RecipeRepository(
     private val shoppingListDao: ShoppingListDao
 ) {
 
-    suspend fun getAllRecipes(): List<Recipe> {
+    fun getAllRecipes(): Flow<List<Recipe>> {
         return recipeDao.getAllRecipes()
     }
 
-    suspend fun getRecipeById(id: Int): Recipe? {
+    fun getRecipeById(id: Int): Flow<Recipe?> {
         return recipeDao.getRecipeById(id)
     }
 
-    suspend fun searchRecipes(query: String): List<Recipe> {
+    fun searchRecipes(query: String): Flow<List<Recipe>> {
         return recipeDao.searchRecipes(query)
     }
 

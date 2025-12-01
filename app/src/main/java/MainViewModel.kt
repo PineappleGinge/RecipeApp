@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -89,7 +90,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun seedIfEmpty() {
-        if (repository.getAllRecipes().isEmpty()) {
+        if (repository.getAllRecipes().first().isEmpty()) {
             val recipeId = repository.addRecipe(
                 Recipe(
                     name = "Chocolate Cake",
@@ -108,7 +109,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun loadDefaultRecipeInternal() {
-        val recipes = repository.getAllRecipes()
+        val recipes = repository.getAllRecipes().first()
         if (recipes.isNotEmpty()) {
             val first = recipes.first()
             _selectedRecipe.value = first
@@ -157,7 +158,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadRecipe(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            val recipe = repository.getRecipeById(id)
+            val recipe = repository.getRecipeById(id).first()
             _selectedRecipe.value = recipe
             if (recipe != null) {
                 loadIngredientsInternal(recipe.id)
@@ -167,7 +168,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun searchRecipes(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val results = repository.searchRecipes(query)
+            val results = repository.searchRecipes(query).first()
             _searchResults.value = results
         }
     }
