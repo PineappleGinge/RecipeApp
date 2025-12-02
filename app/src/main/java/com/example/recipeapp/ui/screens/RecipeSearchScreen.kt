@@ -36,7 +36,7 @@ fun RecipeSearchScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
 
 
@@ -61,25 +61,34 @@ fun RecipeSearchScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
 
-        LazyColumn {
-            items(results) { recipe ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp)
-                        .clickable {
-                            onRecipeClick(recipe.id)
+        if (results.isEmpty() && query.isNotBlank()) {
+            Text(
+                text = "No recipes found.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            LazyColumn {
+                items(results) { recipe ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
+                            .clickable {
+                                onRecipeClick(recipe.id)
+                            }
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = recipe.name,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                text = "Tap to view",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = recipe.name,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = "Tap to view",
-                            style = MaterialTheme.typography.bodySmall
-                        )
                     }
                 }
             }

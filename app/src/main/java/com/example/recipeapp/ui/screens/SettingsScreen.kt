@@ -5,6 +5,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 
 @Composable
 fun SettingsScreen(
@@ -32,13 +34,15 @@ fun SettingsScreen(
         SettingToggle(
             title = "Dark Mode",
             checked = darkMode,
-            onChecked = onDarkModeChange
+            onChecked = onDarkModeChange,
+            description = "Toggle dark theme"
         )
 
         SettingToggle(
             title = "Notifications",
             checked = notificationsEnabled,
-            onChecked = onNotificationsChange
+            onChecked = onNotificationsChange,
+            description = "Enable app notifications"
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -90,7 +94,8 @@ fun SettingsScreen(
 fun SettingToggle(
     title: String,
     checked: Boolean,
-    onChecked: (Boolean) -> Unit
+    onChecked: (Boolean) -> Unit,
+    description: String
 ) {
     Row(
         modifier = Modifier
@@ -99,6 +104,12 @@ fun SettingToggle(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(title, style = MaterialTheme.typography.bodyLarge)
-        Switch(checked = checked, onCheckedChange = onChecked)
+        Switch(
+            checked = checked,
+            onCheckedChange = onChecked,
+            modifier = Modifier.semantics {
+                contentDescription = description
+            }
+        )
     }
 }

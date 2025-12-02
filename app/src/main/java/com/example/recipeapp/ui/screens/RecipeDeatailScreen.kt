@@ -10,9 +10,12 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -106,20 +109,31 @@ fun RecipeDetailScreen(
         Text("Ingredients", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
 
-        LazyColumn {
-            items(ingredients) { ingredient ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(ingredient.name)
+        if (ingredients.isEmpty()) {
+            Text(
+                text = "No ingredients listed.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            LazyColumn {
+                items(ingredients) { ingredient ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(ingredient.name)
 
-                    Checkbox(
-                        checked = ingredient.hasItem,
-                        onCheckedChange = { onToggleIngredient(ingredient) }
-                    )
+                        Checkbox(
+                            checked = ingredient.hasItem,
+                            onCheckedChange = { onToggleIngredient(ingredient) },
+                            modifier = Modifier.semantics {
+                                contentDescription = "Toggle ${ingredient.name}"
+                            }
+                        )
+                    }
                 }
             }
         }
