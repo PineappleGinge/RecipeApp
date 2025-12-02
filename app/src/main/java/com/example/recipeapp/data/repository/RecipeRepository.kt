@@ -30,6 +30,10 @@ class RecipeRepository(
         return recipeDao.insertRecipe(recipe)
     }
 
+    suspend fun updateRecipe(recipe: Recipe) {
+        recipeDao.updateRecipe(recipe)
+    }
+
     suspend fun deleteRecipe(recipe: Recipe) {
         recipeDao.deleteRecipe(recipe)
     }
@@ -52,6 +56,11 @@ class RecipeRepository(
 
     suspend fun deleteIngredientsForRecipe(recipeId: Int) {
         ingredientDao.deleteByRecipeId(recipeId)
+    }
+
+    suspend fun replaceIngredientsForRecipe(recipeId: Int, ingredients: List<Ingredient>) {
+        ingredientDao.deleteByRecipeId(recipeId)
+        ingredientDao.insertIngredients(ingredients)
     }
 
     suspend fun uncheckIngredientByName(name: String) {
@@ -91,5 +100,9 @@ class RecipeRepository(
 
     suspend fun clearShoppingList() {
         shoppingListDao.clearAll()
+    }
+
+    suspend fun resetShoppingListChecks() {
+        shoppingListDao.clearChecks()
     }
 }

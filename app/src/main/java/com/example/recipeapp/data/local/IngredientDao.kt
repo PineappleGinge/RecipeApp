@@ -18,6 +18,9 @@ interface IngredientDao {
     @Update
     suspend fun updateIngredient(ingredient: Ingredient)
 
+    @Update
+    suspend fun updateIngredients(ingredients: List<Ingredient>)
+
     @Query("UPDATE ingredients SET hasItem = 0 WHERE name = :name")
     suspend fun uncheckByName(name: String)
 

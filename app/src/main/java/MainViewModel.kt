@@ -157,6 +157,31 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun updateCurrentRecipe(
+        name: String,
+        ingredients: List<String>,
+        imageUrl: String? = null,
+        description: String? = null
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val current = _selectedRecipe.value ?: return@launch
+            val updated = current.copy(
+                name = name,
+                imageUrl = imageUrl,
+                description = description
+            )
+
+            repository.updateRecipe(updated)
+            repository.replaceIngredientsForRecipe(
+                recipeId = current.id,
+                ingredients = ingredients.map { Ingredient(recipeId = current.id, name = it) }
+            )
+
+            _selectedRecipe.value = updated
+            _ingredients.value = repository.getIngredientsForRecipe(current.id)
+        }
+    }
+
     private suspend fun loadDefaultRecipeInternal() {
         val recipes = repository.getAllRecipes().first()
         if (recipes.isNotEmpty()) {

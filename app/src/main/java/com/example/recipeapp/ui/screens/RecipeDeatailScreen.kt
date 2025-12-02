@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -25,7 +26,8 @@ fun RecipeDetailScreen(
     onToggleIngredient: (Ingredient) -> Unit,
     onNavigateHome: () -> Unit,
     onNavigateBack: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
 ) {
     if (recipe == null) {
         Text("No recipe selected")
@@ -60,6 +62,12 @@ fun RecipeDetailScreen(
                     Icon(
                         imageVector = Icons.Default.Home,
                         contentDescription = "Go to home"
+                    )
+                }
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit recipe"
                     )
                 }
                 IconButton(onClick = onDelete) {

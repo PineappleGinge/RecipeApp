@@ -23,4 +23,7 @@ interface ShoppingListDao {
 
     @Query("DELETE FROM shopping_list")
     suspend fun clearAll()
+
+    @Query("UPDATE shopping_list SET hasItem = 0")
+    suspend fun clearChecks()
 }

@@ -23,14 +23,37 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.example.recipeapp.data.local.Recipe
 import com.example.recipeapp.ui.theme.RecipeAppTheme
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.example.recipeapp.data.work.CleanupWorker
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        scheduleCleanupWork()
         setContent {
             RecipeApp()
         }
+    }
+
+    private fun scheduleCleanupWork() {
+        val constraints = Constraints.Builder()
+            .setRequiresBatteryNotLow(true)
+            .build()
+
+        val request = PeriodicWorkRequestBuilder<CleanupWorker>(1, TimeUnit.DAYS)
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            "cleanup_worker",
+            ExistingPeriodicWorkPolicy.UPDATE,
+            request
+        )
     }
 }
 
@@ -172,7 +195,8 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
                                     restoreState = true
                                 }
                             }
-                        }
+                        },
+                        onEdit = { navController.navigate(Screen.RecipeEdit.route) }
                     )
                 }
 
@@ -192,6 +216,26 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
                                 launchSingleTop = true
                                 restoreState = true
                             }
+                        },
+                        onCancel = { navController.popBackStack() }
+                    )
+                }
+
+                composable(Screen.RecipeEdit.route) {
+                    val recipe by mainViewModel.selectedRecipe.collectAsState()
+                    val ingredients by mainViewModel.ingredients.collectAsState()
+
+                    EditRecipeScreen(
+                        recipe = recipe,
+                        existingIngredients = ingredients,
+                        onSave = { name, ingredientNames, description, imageUrl ->
+                            mainViewModel.updateCurrentRecipe(
+                                name = name,
+                                ingredients = ingredientNames,
+                                description = description.ifBlank { null },
+                                imageUrl = imageUrl
+                            )
+                            navController.popBackStack()
                         },
                         onCancel = { navController.popBackStack() }
                     )
