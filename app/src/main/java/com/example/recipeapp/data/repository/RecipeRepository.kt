@@ -50,6 +50,10 @@ class RecipeRepository(
         ingredientDao.updateIngredient(ingredient)
     }
 
+    suspend fun deleteIngredientsForRecipe(recipeId: Int) {
+        ingredientDao.deleteByRecipeId(recipeId)
+    }
+
     suspend fun uncheckIngredientByName(name: String) {
         ingredientDao.uncheckByName(name)
     }

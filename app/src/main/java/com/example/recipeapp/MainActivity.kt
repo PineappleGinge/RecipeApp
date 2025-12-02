@@ -161,7 +161,18 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
                                 }
                             }
                         },
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        onDelete = {
+                            mainViewModel.deleteCurrentRecipe {
+                                navController.navigate(Screen.Home.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        }
                     )
                 }
 

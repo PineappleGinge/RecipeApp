@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -225,6 +226,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 loadShoppingListInternal()
             }
             loadIngredientsInternal(item.recipeId)
+        }
+    }
+
+    fun deleteCurrentRecipe(onComplete: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val current = _selectedRecipe.value ?: return@launch
+            repository.deleteIngredientsForRecipe(current.id)
+            repository.deleteRecipe(current)
+
+            val remaining = repository.getAllRecipes().first()
+            if (remaining.isNotEmpty()) {
+                val next = remaining.first()
+                _selectedRecipe.value = next
+                _ingredients.value = repository.getIngredientsForRecipe(next.id)
+            } else {
+                _selectedRecipe.value = null
+                _ingredients.value = emptyList()
+            }
+
+            withContext(Dispatchers.Main) {
+                onComplete()
+            }
         }
     }
 

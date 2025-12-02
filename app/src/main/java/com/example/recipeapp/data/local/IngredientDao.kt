@@ -23,4 +23,7 @@ interface IngredientDao {
 
     @Query("UPDATE ingredients SET hasItem = 0")
     suspend fun clearAllChecks()
+
+    @Query("DELETE FROM ingredients WHERE recipeId = :recipeId")
+    suspend fun deleteByRecipeId(recipeId: Int)
 }
