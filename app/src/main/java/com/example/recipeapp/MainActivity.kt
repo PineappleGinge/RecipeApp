@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
@@ -46,6 +47,7 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
             Screen.Home,
             Screen.ShoppingList,
             Screen.RecipeSearch,
+            Screen.AddRecipe,
             Screen.Settings
         )
 
@@ -86,6 +88,7 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
                                     Screen.ShoppingList -> Icons.Default.List
                                     Screen.RecipeSearch -> Icons.Default.Search
                                     Screen.Settings -> Icons.Default.Settings
+                                    Screen.AddRecipe -> Icons.Default.Add
                                     else -> Icons.Default.Home
                                 }
                                 Icon(imageVector = icon, contentDescription = screen.route)
@@ -159,6 +162,27 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
                             }
                         },
                         onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable(Screen.AddRecipe.route) {
+                    AddRecipeScreen(
+                        onSave = { name, ingredientNames, imageUrl, description ->
+                            mainViewModel.addRecipeWithIngredients(
+                                name = name,
+                                ingredients = ingredientNames,
+                                imageUrl = imageUrl.ifBlank { null },
+                                description = description.ifBlank { null }
+                            )
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        onCancel = { navController.popBackStack() }
                     )
                 }
 
