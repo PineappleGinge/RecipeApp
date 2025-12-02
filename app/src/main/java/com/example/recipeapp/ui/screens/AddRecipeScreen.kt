@@ -1,5 +1,11 @@
 package com.example.recipeapp.ui.screens
 
+import android.Manifest
+import android.content.Context
+import android.net.Uri
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,19 +26,47 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
+import androidx.core.content.ContextCompat
+import java.io.File
 
 @Composable
 fun AddRecipeScreen(
-    onSave: (name: String, ingredients: List<String>, imageUrl: String, description: String) -> Unit,
+    onSave: (name: String, ingredients: List<String>, description: String, imageUrl: String?) -> Unit,
     onCancel: () -> Unit
 ) {
     val ingredientInputs = remember { mutableStateListOf("") }
     val nameState = remember { androidx.compose.runtime.mutableStateOf("") }
-    val imageState = remember { androidx.compose.runtime.mutableStateOf("") }
     val descriptionState = remember { androidx.compose.runtime.mutableStateOf("") }
+    val context = LocalContext.current
+    val photoUriState = remember { mutableStateOf<Uri?>(null) }
+
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (!success) {
+            photoUriState.value = null
+        }
+    }
+
+    val launchCamera: () -> Unit = {
+        val uri = createImageUri(context)
+        photoUriState.value = uri
+        uri?.let { takePictureLauncher.launch(it) }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            launchCamera()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -53,15 +87,6 @@ fun AddRecipeScreen(
         Spacer(modifier = Modifier.padding(4.dp))
 
         OutlinedTextField(
-            value = imageState.value,
-            onValueChange = { imageState.value = it },
-            label = { Text("Image URL (optional)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.padding(4.dp))
-
-        OutlinedTextField(
             value = descriptionState.value,
             onValueChange = { descriptionState.value = it },
             label = { Text("Description (optional)") },
@@ -71,6 +96,41 @@ fun AddRecipeScreen(
         Spacer(modifier = Modifier.padding(12.dp))
 
         Text("Ingredients", style = MaterialTheme.typography.titleMedium)
+
+        Spacer(modifier = Modifier.padding(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = {
+                    val hasPermission = ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.CAMERA
+                    ) == PackageManager.PERMISSION_GRANTED
+                    if (hasPermission) {
+                        launchCamera()
+                    } else {
+                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Take photo")
+                Spacer(modifier = Modifier.padding(4.dp))
+                Text("Take photo")
+            }
+        }
+
+        if (photoUriState.value != null) {
+            Spacer(modifier = Modifier.padding(4.dp))
+            Text(
+                text = "Photo captured",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
 
         LazyColumn(
             modifier = Modifier
@@ -137,13 +197,30 @@ fun AddRecipeScreen(
                         onSave(
                             name,
                             cleanedIngredients,
-                            imageState.value.trim(),
-                            descriptionState.value.trim()
+                            descriptionState.value.trim(),
+                            photoUriState.value?.toString()
                         )
                     }
                 },
                 modifier = Modifier.weight(1f)
             ) { Text("Save") }
         }
+    }
+}
+
+private fun createImageUri(context: Context): Uri? {
+    return try {
+        val imageFile = File.createTempFile(
+            /* prefix = */ "recipe_photo_",
+            /* suffix = */ ".jpg",
+            /* directory = */ context.cacheDir
+        )
+        FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            imageFile
+        )
+    } catch (e: Exception) {
+        null
     }
 }

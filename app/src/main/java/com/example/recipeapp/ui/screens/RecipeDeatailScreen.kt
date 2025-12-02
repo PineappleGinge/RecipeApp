@@ -11,7 +11,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.recipeapp.data.local.Ingredient
 import com.example.recipeapp.data.local.Recipe
 
@@ -68,6 +70,18 @@ fun RecipeDetailScreen(
             }
         }
         Spacer(modifier = Modifier.height(12.dp))
+
+        recipe.imageUrl?.let { url ->
+            AsyncImage(
+                model = url,
+                contentDescription = "${recipe.name} photo",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
         Text("Ingredients", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))

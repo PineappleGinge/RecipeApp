@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     kapt(libs.androidx.room.compiler)
 

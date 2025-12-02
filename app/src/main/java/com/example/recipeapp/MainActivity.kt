@@ -178,12 +178,12 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
 
                 composable(Screen.AddRecipe.route) {
                     AddRecipeScreen(
-                        onSave = { name, ingredientNames, imageUrl, description ->
+                        onSave = { name, ingredientNames, description, imageUrl ->
                             mainViewModel.addRecipeWithIngredients(
                                 name = name,
                                 ingredients = ingredientNames,
-                                imageUrl = imageUrl.ifBlank { null },
-                                description = description.ifBlank { null }
+                                description = description.ifBlank { null },
+                                imageUrl = imageUrl
                             )
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
