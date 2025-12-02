@@ -94,18 +94,39 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val existing = repository.getAllRecipes().first()
         val placeholder = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd"
         val seeds = listOf(
-            "Chocolate Cake" to listOf("Flour", "Eggs", "Chocolate", "Sugar", "Butter", "Baking powder"),
-            "Vanilla Cupcakes" to listOf("Flour", "Sugar", "Butter", "Eggs", "Vanilla", "Baking powder", "Milk"),
-            "Apple Pie" to listOf("Apples", "Pie crust", "Sugar", "Butter", "Cinnamon", "Nutmeg", "Lemon juice"),
-            "Bacon and Cabbage" to listOf("Bacon", "Cabbage", "Potatoes", "Onion", "Butter", "Salt", "Pepper"),
-            "Garlic Roasted Potatoes" to listOf("Potatoes", "Olive oil", "Garlic", "Rosemary", "Salt", "Pepper")
+            Triple(
+                "Chocolate Cake",
+                "Rich and moist chocolate cake topped with a simple frosting.",
+                listOf("Flour", "Eggs", "Chocolate", "Sugar", "Butter", "Baking powder")
+            ),
+            Triple(
+                "Vanilla Cupcakes",
+                "Light vanilla cupcakes perfect for parties or afternoon treats.",
+                listOf("Flour", "Sugar", "Butter", "Eggs", "Vanilla", "Baking powder", "Milk")
+            ),
+            Triple(
+                "Apple Pie",
+                "Classic apple pie with cinnamon-spiced filling and flaky crust.",
+                listOf("Apples", "Pie crust", "Sugar", "Butter", "Cinnamon", "Nutmeg", "Lemon juice")
+            ),
+            Triple(
+                "Bacon and Cabbage",
+                "Comforting bacon and cabbage with potatoes for a hearty dinner.",
+                listOf("Bacon", "Cabbage", "Potatoes", "Onion", "Butter", "Salt", "Pepper")
+            ),
+            Triple(
+                "Garlic Roasted Potatoes",
+                "Crispy roasted potatoes with garlic and rosemary.",
+                listOf("Potatoes", "Olive oil", "Garlic", "Rosemary", "Salt", "Pepper")
+            )
         )
 
-        seeds.forEach { (name, ingredientNames) ->
+        seeds.forEach { (name, description, ingredientNames) ->
             if (existing.none { it.name == name }) {
                 val recipeId = repository.addRecipe(
                     Recipe(
                         name = name,
+                        description = description,
                         imageUrl = placeholder
                     )
                 ).toInt()
