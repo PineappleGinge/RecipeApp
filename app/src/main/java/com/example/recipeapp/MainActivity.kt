@@ -6,6 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -56,19 +59,36 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
                         NavigationBarItem(
                             selected = currentRoute == screen.route,
                             onClick = {
-                                navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
+                                if (screen.route == Screen.Home.route) {
+                                    val popped = navController.popBackStack(Screen.Home.route, inclusive = false)
+                                    if (!popped) {
+                                        navController.navigate(Screen.Home.route) {
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
+                                } else {
+                                    navController.navigate(screen.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 }
                             },
                             icon = {
-                                Icon(
-                                    imageVector = Icons.Default.Home,
-                                    contentDescription = screen.route
-                                )
+                                val icon = when (screen) {
+                                    Screen.Home -> Icons.Default.Home
+                                    Screen.ShoppingList -> Icons.Default.List
+                                    Screen.RecipeSearch -> Icons.Default.Search
+                                    Screen.Settings -> Icons.Default.Settings
+                                    else -> Icons.Default.Home
+                                }
+                                Icon(imageVector = icon, contentDescription = screen.route)
                             },
                             label = {
                                 Text(screen.route.replace("_", " ").replaceFirstChar { it.uppercase() })
@@ -125,7 +145,20 @@ fun RecipeApp(mainViewModel: MainViewModel = viewModel()) {
                     RecipeDetailScreen(
                         recipe = recipe,
                         ingredients = ingredients,
-                        onToggleIngredient = { mainViewModel.toggleIngredient(it) }
+                        onToggleIngredient = { mainViewModel.toggleIngredient(it) },
+                        onNavigateHome = {
+                            val popped = navController.popBackStack(Screen.Home.route, inclusive = false)
+                            if (!popped) {
+                                navController.navigate(Screen.Home.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        },
+                        onNavigateBack = { navController.popBackStack() }
                     )
                 }
 

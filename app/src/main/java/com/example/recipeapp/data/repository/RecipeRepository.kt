@@ -50,12 +50,31 @@ class RecipeRepository(
         ingredientDao.updateIngredient(ingredient)
     }
 
+    suspend fun uncheckIngredientByName(name: String) {
+        ingredientDao.uncheckByName(name)
+    }
+
+    suspend fun clearAllIngredientChecks() {
+        ingredientDao.clearAllChecks()
+    }
+
     suspend fun getShoppingList(): List<ShoppingListItem> {
         return shoppingListDao.getShoppingList()
     }
 
+    suspend fun getShoppingItemByName(name: String): ShoppingListItem? {
+        return shoppingListDao.getItemByName(name)
+    }
+
     suspend fun addShoppingItem(item: ShoppingListItem) {
         shoppingListDao.insertItem(item)
+    }
+
+    suspend fun addShoppingItemIfMissing(name: String) {
+        val existing = shoppingListDao.getItemByName(name)
+        if (existing == null) {
+            shoppingListDao.insertItem(ShoppingListItem(name = name))
+        }
     }
 
     suspend fun updateShoppingItem(item: ShoppingListItem) {

@@ -90,20 +90,47 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun seedIfEmpty() {
-        if (repository.getAllRecipes().first().isEmpty()) {
+        val existing = repository.getAllRecipes().first()
+        val placeholder = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd"
+        val seeds = listOf(
+            "Chocolate Cake" to listOf("Flour", "Eggs", "Chocolate", "Sugar", "Butter", "Baking powder"),
+            "Vanilla Cupcakes" to listOf("Flour", "Sugar", "Butter", "Eggs", "Vanilla", "Baking powder", "Milk"),
+            "Apple Pie" to listOf("Apples", "Pie crust", "Sugar", "Butter", "Cinnamon", "Nutmeg", "Lemon juice"),
+            "Bacon and Cabbage" to listOf("Bacon", "Cabbage", "Potatoes", "Onion", "Butter", "Salt", "Pepper"),
+            "Garlic Roasted Potatoes" to listOf("Potatoes", "Olive oil", "Garlic", "Rosemary", "Salt", "Pepper")
+        )
+
+        seeds.forEach { (name, ingredientNames) ->
+            if (existing.none { it.name == name }) {
+                val recipeId = repository.addRecipe(
+                    Recipe(
+                        name = name,
+                        imageUrl = placeholder
+                    )
+                ).toInt()
+                repository.addIngredients(
+                    ingredientNames.map { Ingredient(recipeId = recipeId, name = it) }
+                )
+            }
+        }
+    }
+
+    fun addRecipeWithIngredients(
+        name: String,
+        ingredients: List<String>,
+        imageUrl: String? = null,
+        description: String? = null
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
             val recipeId = repository.addRecipe(
                 Recipe(
-                    name = "Chocolate Cake",
-                    imageUrl = "https://example.com/cake.jpg"
+                    name = name,
+                    imageUrl = imageUrl,
+                    description = description
                 )
             ).toInt()
-
             repository.addIngredients(
-                listOf(
-                    Ingredient(recipeId = recipeId, name = "Flour"),
-                    Ingredient(recipeId = recipeId, name = "Eggs"),
-                    Ingredient(recipeId = recipeId, name = "Chocolate")
-                )
+                ingredients.map { Ingredient(recipeId = recipeId, name = it) }
             )
         }
     }
@@ -138,6 +165,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             val updated = item.copy(hasItem = !item.hasItem)
             repository.updateShoppingItem(updated)
+            if (!updated.hasItem) {
+                repository.uncheckIngredientByName(updated.name)
+                refreshSelectedIngredients()
+            }
             loadShoppingListInternal()
         }
     }
@@ -145,6 +176,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun deleteShoppingItem(item: ShoppingListItem) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteShoppingItem(item)
+            repository.uncheckIngredientByName(item.name)
+            refreshSelectedIngredients()
             loadShoppingListInternal()
         }
     }
@@ -152,7 +185,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun clearShoppingList() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.clearShoppingList()
+            repository.clearAllIngredientChecks()
+            refreshSelectedIngredients()
             loadShoppingListInternal()
+        }
+    }
+
+    private suspend fun refreshSelectedIngredients() {
+        val currentRecipe = _selectedRecipe.value
+        if (currentRecipe != null) {
+            loadIngredientsInternal(currentRecipe.id)
         }
     }
 
@@ -178,6 +220,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             val updated = item.copy(hasItem = !item.hasItem)
             repository.updateIngredient(updated)
+            if (updated.hasItem) {
+                repository.addShoppingItemIfMissing(updated.name)
+                loadShoppingListInternal()
+            }
             loadIngredientsInternal(item.recipeId)
         }
     }

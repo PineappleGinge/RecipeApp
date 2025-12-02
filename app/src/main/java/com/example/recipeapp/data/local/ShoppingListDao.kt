@@ -18,6 +18,9 @@ interface ShoppingListDao {
     @Delete
     suspend fun deleteItem(item: ShoppingListItem)
 
+    @Query("SELECT * FROM shopping_list WHERE name = :name LIMIT 1")
+    suspend fun getItemByName(name: String): ShoppingListItem?
+
     @Query("DELETE FROM shopping_list")
     suspend fun clearAll()
 }
