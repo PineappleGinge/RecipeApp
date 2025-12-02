@@ -40,6 +40,7 @@ fun ShoppingListScreen(
     onDeleteItem: (ShoppingListItem) -> Unit,
     onClearAll: () -> Unit
 ) {
+    // Manage the grocery shopping list, with add, toggle, delete, and clear actions.
     var text by remember { mutableStateOf("") }
 
     Column(

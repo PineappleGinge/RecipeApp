@@ -34,12 +34,14 @@ import java.util.concurrent.TimeUnit
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Ensure periodic cleanup is registered once per app launch.
         scheduleCleanupWork()
         setContent {
             RecipeApp()
         }
     }
 
+    // Register daily cleanup work with reasonable battery constraints. 
     private fun scheduleCleanupWork() {
         val constraints = Constraints.Builder()
             .setRequiresBatteryNotLow(true)

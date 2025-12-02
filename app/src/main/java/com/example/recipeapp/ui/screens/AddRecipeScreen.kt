@@ -40,6 +40,7 @@ fun AddRecipeScreen(
     onSave: (name: String, ingredients: List<String>, description: String, imageUrl: String?) -> Unit,
     onCancel: () -> Unit
 ) {
+    // Collect user input for a new recipe, including optional photo capture.
     val ingredientInputs = remember { mutableStateListOf("") }
     val nameState = remember { androidx.compose.runtime.mutableStateOf("") }
     val descriptionState = remember { androidx.compose.runtime.mutableStateOf("") }
@@ -211,9 +212,9 @@ fun AddRecipeScreen(
 private fun createImageUri(context: Context): Uri? {
     return try {
         val imageFile = File.createTempFile(
-            /* prefix = */ "recipe_photo_",
-            /* suffix = */ ".jpg",
-            /* directory = */ context.cacheDir
+            "recipe_photo_",
+            ".jpg",
+            context.cacheDir
         )
         FileProvider.getUriForFile(
             context,

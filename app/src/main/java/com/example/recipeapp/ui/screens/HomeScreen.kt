@@ -33,7 +33,7 @@ fun HomeScreen(
     onOpenRecipe: () -> Unit,
     onToggleIngredient: (Ingredient) -> Unit
 ) {
-
+    // Show the highlighted recipe and its ingredient checklist.
     Column(
         modifier = Modifier
             .fillMaxSize()

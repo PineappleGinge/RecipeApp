@@ -18,6 +18,7 @@ fun SettingsScreen(
     onDefaultServingsChange: (Int) -> Unit
 ) {
 
+    // Preferences surface to toggle app-wide options and defaults.
     Column(
         modifier = Modifier
             .fillMaxSize()

@@ -51,18 +51,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         initialValue = 4
     )
 
+    // Persist user preference for dark theme. 
     fun toggleDarkMode(enabled: Boolean) {
         viewModelScope.launch {
             settings.setDarkMode(enabled)
         }
     }
 
+    // Persist user preference for notifications. 
     fun toggleNotifications(enabled: Boolean) {
         viewModelScope.launch {
             settings.setNotifications(enabled)
         }
     }
 
+    // Persist default servings count used across the app. 
     fun setDefaultServings(value: Int) {
         viewModelScope.launch {
             settings.setDefaultServings(value)
@@ -80,6 +83,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
+            // Preload starter data and state so the app has content on first launch.
             seedIfEmpty()
             loadDefaultRecipeInternal()
             loadShoppingListInternal()
@@ -164,6 +168,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         description: String? = null
     ) {
         viewModelScope.launch(Dispatchers.IO) {
+            // Replace recipe and its ingredients in one go to keep them in sync.
             val current = _selectedRecipe.value ?: return@launch
             val updated = current.copy(
                 name = name,
@@ -195,12 +200,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _ingredients.value = repository.getIngredientsForRecipe(recipeId)
     }
 
+    // Refresh shopping list from Room on demand. 
     fun loadShoppingList() {
         viewModelScope.launch(Dispatchers.IO) {
             loadShoppingListInternal()
         }
     }
 
+    // Create a new shopping list entry and refresh state. 
     fun addShoppingItem(name: String) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.addShoppingItem(ShoppingListItem(name = name))
@@ -208,6 +215,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Flip a shopping list item's checked state and sync ingredient checks. 
     fun toggleShoppingItem(item: ShoppingListItem) {
         viewModelScope.launch(Dispatchers.IO) {
             val updated = item.copy(hasItem = !item.hasItem)
@@ -220,6 +228,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Delete a shopping list item and clear matching ingredient checks. 
     fun deleteShoppingItem(item: ShoppingListItem) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteShoppingItem(item)
@@ -229,6 +238,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Remove all shopping items and reset ingredient checkmarks. 
     fun clearShoppingList() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.clearShoppingList()
@@ -245,6 +255,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Load a specific recipe and its ingredients by id. 
     fun loadRecipe(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             val recipe = repository.getRecipeById(id).first()
@@ -255,6 +266,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Run a name search and expose results to the UI. 
     fun searchRecipes(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val results = repository.searchRecipes(query).first()
@@ -262,7 +274,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-
+    // Flip ingredient check status and sync shopping list accordingly. 
     fun toggleIngredient(item: Ingredient) {
         viewModelScope.launch(Dispatchers.IO) {
             val updated = item.copy(hasItem = !item.hasItem)

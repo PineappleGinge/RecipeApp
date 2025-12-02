@@ -23,6 +23,7 @@ fun RecipeSearchScreen(
     results: List<Recipe>
 ) {
 
+    // Search recipes by name and drill into a selected result.
     var query by remember { mutableStateOf("") }
     var navigateOnResult by remember { mutableStateOf(false) }
 

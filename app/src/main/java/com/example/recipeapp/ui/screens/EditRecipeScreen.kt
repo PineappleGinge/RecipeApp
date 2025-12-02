@@ -45,6 +45,7 @@ fun EditRecipeScreen(
     onCancel: () -> Unit
 
 ) {
+    // Allow users to update an existing recipe and its ingredient list.
     if (recipe == null) {
         Column(
             modifier = Modifier
@@ -232,9 +233,9 @@ fun EditRecipeScreen(
 private fun createImageUri(context: Context): Uri? {
     return try {
         val imageFile = File.createTempFile(
-            /* prefix = */ "recipe_photo_",
-            /* suffix = */ ".jpg",
-            /* directory = */ context.cacheDir
+            "recipe_photo_",
+            ".jpg",
+            context.cacheDir
         )
         FileProvider.getUriForFile(
             context,

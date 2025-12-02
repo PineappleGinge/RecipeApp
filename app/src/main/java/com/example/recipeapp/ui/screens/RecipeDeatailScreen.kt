@@ -32,6 +32,7 @@ fun RecipeDetailScreen(
     onDelete: () -> Unit,
     onEdit: () -> Unit
 ) {
+    // Display a recipe with photo, description, and ingredient checklist.
     if (recipe == null) {
         Text("No recipe selected")
         return

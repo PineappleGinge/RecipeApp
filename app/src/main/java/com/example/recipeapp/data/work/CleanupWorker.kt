@@ -13,6 +13,7 @@ class CleanupWorker(
 
     override suspend fun doWork(): Result {
         return try {
+            // Clear all "has item" flags daily so stale ingredient/shopping states do not linger.
             val db = AppDatabase.getInstance(applicationContext)
             db.ingredientDao().clearAllChecks()
             db.shoppingListDao().clearChecks()
