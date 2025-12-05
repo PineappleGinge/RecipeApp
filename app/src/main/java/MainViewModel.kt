@@ -24,12 +24,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _searchResults = MutableStateFlow<List<Recipe>>(emptyList())
     val searchResults = _searchResults
 
-    private val db = AppDatabase.getInstance(application)
-    private val repository = RecipeRepository(
-        db.recipeDao(),
-        db.ingredientDao(),
-        db.shoppingListDao()
-    )
+    // Defer database creation to first use inside background threads to avoid blocking startup.
+    private val repository: RecipeRepository by lazy {
+        val db = AppDatabase.getInstance(application)
+        RecipeRepository(
+            db.recipeDao(),
+            db.ingredientDao(),
+            db.shoppingListDao()
+        )
+    }
 
     private val settings = SettingsDataStore(application)
 
